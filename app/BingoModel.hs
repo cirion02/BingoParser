@@ -96,7 +96,7 @@ data MessSection = Books | Towels | Chests
   deriving (Eq, Show)
 
 data DoSpecificThing = ReadPoem | FindLetter | ReadDiary | FindTheoPhone | ReflectionCutscene | GetPicoOrb | SwitchIce 
-                     | TopRoute | BottomRoute | EasterEggRoom | ReachCoreOrb | ReachIntroCar | BirdsNest | AllFlags
+                     | TopRoute | BottomRoute | EasterEggRoom | ReachCoreOrb | ReachIntroCar | BirdsNest | AllFlags | KevinOn4Sides
   deriving (Eq, Show)
 
 data Objective = 
@@ -112,8 +112,7 @@ data Objective =
     MiscCountTaskAmount MiscCountTask Int                       |
     MessOrder MessSection MessSection MessSection               |
     DoThingAtLocation DoSpecificThing Location                  |
-    TwoGems Location Location                                   |
-    KevinOn4Sides
+    TwoGems Location Location                                   
   deriving (Eq, Show)
 
 

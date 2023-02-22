@@ -110,7 +110,7 @@ Objective : EdgeCases                              {$1}
           | stun seeker num times                  {MiscCountTaskAmount StunSeeker $3}
           | kill num seeker                        {MiscCountTaskAmount KillSeeker $2}
           | checkpoint MessCP MessCP MessCP        {MessOrder $2 $3 $4}
-          | SpecificThing Infix Location              {DoThingAtLocation $1 $3}
+          | SpecificThing Infix Location           {DoThingAtLocation $1 $3}
 
 Infix : in                                         {}
       | of                                         {}
@@ -136,7 +136,9 @@ MessCP : books                                     {Books}
        | chests                                    {Chests}
 
 EdgeCases : reach chapterName in pico8             {ReachLocation LPico8OldSite}
-          | kevin4                                 {KevinOn4Sides}
+          | kevin4                                 {DoThingAtLocation KevinOn4Sides (LCheckpoint (Checkpoint (Chapter 6 ASide) 2))}
+          | easteregg in reflection                {DoThingAtLocation EasterEggRoom (LCheckpoint (Checkpoint (Chapter 6 ASide) 4))}
+          | introcar in chapterName                {DoThingAtLocation ReachIntroCar (LCheckpoint (Checkpoint (Chapter 9 ASide) 4))}
           | wingedgolden                           {CollectablesAtLocation (LChapter (Chapter 1 ASide)) WingedGolden}
           | reachrockbottom                        {ReachLocation LRockBottom}
 
