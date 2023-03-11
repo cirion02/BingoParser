@@ -16,9 +16,17 @@ main = do
 
   mapM_ print $ filter tempFilter parsedFile
 
-  putStrLn $ showRouteBreakdown $ fst $ foldr foldFixedObjectives (emptyRoute, []) parsedFile
+  let res = foldr foldFixedObjectives (emptyRoute, []) parsedFile
+
+  putStrLn $ showRouteBreakdown $ fst res
+
+  mapM_ print $ snd res
+
+  putStrLn ("Total Objectives: " ++ (show $ length parsedFile))
+  putStrLn ("Objectives Routed: " ++ (show $ (length parsedFile) - (length $ snd res)))
+  putStrLn ("Remaining Objectives: " ++ (show $ length $ snd res))
 
 
 tempFilter :: BM.Objective -> Bool
-tempFilter (BM.MiscCountTaskAmount _ _) = True
+tempFilter (BM.DoThingAtLocation _ _) = True
 tempFilter _ = False

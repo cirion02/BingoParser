@@ -61,9 +61,19 @@ foldFixedObjectives (ReachLocation (LCheckpoint (Checkpoint (Chapter chapterNum 
 
 foldFixedObjectives (ReachLocation LPico8OldSite) (r,rqs) = (setPicoSite True r, rqs)
 
-foldFixedObjectives (ReachLocation LRockBottom) (r,rqs) = (r, (ReachRockBottom:rqs))
+foldFixedObjectives o@(ReachLocation LRockBottom) (r,rqs) = (r, ((NonParsedObjective o):rqs))
 
 foldFixedObjectives o@(ReachLocation _) (_, _) = error $ "Unexpected objective " ++ show o
+
+
+
+
+foldFixedObjectives (TwoGems (LCheckpoint (Checkpoint (Chapter 7 ASide) cpNum1)) (LCheckpoint (Checkpoint (Chapter 7 ASide) cpNum2))) (r,rqs) = (
+  routeCheckpointSet True 7 cpNum2 (addTasks ["Get the Gem"]) $
+  routeCheckpointSet True 7 cpNum1 (addTasks ["Get the Gem"]) r, rqs)
+
+foldFixedObjectives o@(TwoGems _ _) (_, _) = error $ "Unexpected objective " ++ show o
+
 
 
 
@@ -71,15 +81,7 @@ foldFixedObjectives (MessOrder a b c) (r,rqs) = (routeCheckpointSet True 3 2 (ad
 
 
 
-foldFixedObjectives _ (r, rqs) = (r, rqs)
-
-
-
-
-
-
-
-
+foldFixedObjectives o (r, rqs) = (r, ((NonParsedObjective o):rqs))
 
 sideToBool :: ChapterType -> Bool
 sideToBool ASide = True
@@ -94,4 +96,7 @@ variantToTask Dashless = "Complete without dashing"
 messOrderToTask :: MessSection -> MessSection -> MessSection -> String
 messOrderToTask a b c = "Mess Order: " ++ (intercalate " -> " $ map show [a,b,c])
 
-data Requirement = ReachRockBottom
+
+
+data Requirement = NonParsedObjective Objective
+  deriving (Eq, Show)
