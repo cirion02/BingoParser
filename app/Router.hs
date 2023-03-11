@@ -7,7 +7,7 @@ import BingoData
 import Data.List (intercalate)
 
 
-foldFixedObjectives :: Objective -> (Route, [Requirement]) -> (Route, [Requirement])
+foldFixedObjectives :: Objective -> (Route, [Objective]) -> (Route, [Objective])
 
 foldFixedObjectives (CompleteWithVariant (LCheckpoint (Checkpoint (Chapter chapterNum side) checkpointNum)) variant) (r, rqs) = (routeCheckpointSetMultiple (sideToBool side) chapterNum checkpointNum [setComplete True, addTasks [variantToTask variant]] r, rqs)
 
@@ -61,7 +61,7 @@ foldFixedObjectives (ReachLocation (LCheckpoint (Checkpoint (Chapter chapterNum 
 
 foldFixedObjectives (ReachLocation LPico8OldSite) (r,rqs) = (setPicoSite True r, rqs)
 
-foldFixedObjectives o@(ReachLocation LRockBottom) (r,rqs) = (r, ((NonParsedObjective o):rqs))
+foldFixedObjectives o@(ReachLocation LRockBottom) (r,rqs) = (r, (o:rqs))
 
 foldFixedObjectives o@(ReachLocation _) (_, _) = error $ "Unexpected objective " ++ show o
 
@@ -76,12 +76,24 @@ foldFixedObjectives o@(TwoGems _ _) (_, _) = error $ "Unexpected objective " ++ 
 
 
 
+foldFixedObjectives (DoThingAtLocation BirdsNest LEpilogue) (r,rqs) = (setBirdsNest True r, rqs)
+
+foldFixedObjectives (DoThingAtLocation GetPicoOrb LPico8) (r,rqs) = (setPicoOrb True r, rqs)
+
+foldFixedObjectives o@(DoThingAtLocation AllFlags _) (r,rqs) = (r, (o:rqs))
+
+foldFixedObjectives (DoThingAtLocation thing (LCheckpoint (Checkpoint (Chapter chapterNum side) cpNum))) (r,rqs) = (routeCheckpointSet (sideToBool side) chapterNum cpNum (addTasks [doSpecificThingToTask thing]) r,rqs)
+
+foldFixedObjectives (DoThingAtLocation thing (LChapter (Chapter chapterNum side))) (r,rqs) = (routeCheckpointSet (sideToBool side) chapterNum (getSpecificThingCp thing) (addTasks [doSpecificThingToTask thing]) r,rqs)
+
+foldFixedObjectives o@(DoThingAtLocation _ _) (_, _) = error $ "Unexpected objective " ++ show o
+
 
 foldFixedObjectives (MessOrder a b c) (r,rqs) = (routeCheckpointSet True 3 2 (addTasks [messOrderToTask a b c]) r, rqs)
 
 
 
-foldFixedObjectives o (r, rqs) = (r, ((NonParsedObjective o):rqs))
+foldFixedObjectives o (r, rqs) = (r, (o:rqs))
 
 sideToBool :: ChapterType -> Bool
 sideToBool ASide = True
@@ -96,7 +108,24 @@ variantToTask Dashless = "Complete without dashing"
 messOrderToTask :: MessSection -> MessSection -> MessSection -> String
 messOrderToTask a b c = "Mess Order: " ++ (intercalate " -> " $ map show [a,b,c])
 
+doSpecificThingToTask :: DoSpecificThing -> String
+doSpecificThingToTask ReadPoem = "Read the poem"
+doSpecificThingToTask FindLetter = "Reach PICO-8 and read the letter"
+doSpecificThingToTask ReadDiary = "Read the diary"
+doSpecificThingToTask FindTheoPhone = "Find Theo's Phone"
+doSpecificThingToTask ReflectionCutscene = "Watch the Reflection cutscene"
+doSpecificThingToTask SwitchIce = "Get the switch on the right"
+doSpecificThingToTask TopRoute = "Only use top route rooms"
+doSpecificThingToTask BottomRoute = "Only use bottom route rooms"
+doSpecificThingToTask EasterEggRoom = "Visit easter egg room"
+doSpecificThingToTask ReachCoreOrb = "Reach the badeline orb"
+doSpecificThingToTask ReachIntroCar = "Reach intro car"
+doSpecificThingToTask KevinOn4Sides = "Hit a kevin on all 4 sides"
+doSpecificThingToTask AllFlags = error "AllFlags should not be asked for it's name"
+doSpecificThingToTask BirdsNest = error "BirdsNest should not be asked for it's name"
+doSpecificThingToTask GetPicoOrb = error "GetPicoOrb should not be asked for it's name"
 
-
-data Requirement = NonParsedObjective Objective
-  deriving (Eq, Show)
+getSpecificThingCp :: DoSpecificThing -> Int
+getSpecificThingCp ReadPoem = 3
+getSpecificThingCp FindTheoPhone = 1
+getSpecificThingCp t = error $ "getSpecificThing no suppoted for" ++ show t
