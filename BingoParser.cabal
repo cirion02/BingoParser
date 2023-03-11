@@ -15,9 +15,6 @@ copyright:      2023 Author name here
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
@@ -40,8 +37,11 @@ executable BingoParser-exe
   main-is: Main.hs
   other-modules:
       BingoModel
+      Helper
       Lexer
       Parser
+      Route
+      Router
       Paths_BingoParser
   hs-source-dirs:
       app
