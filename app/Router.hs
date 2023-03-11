@@ -4,6 +4,7 @@ import Route
 import BingoModel
 import BingoData
 
+import Data.List (intercalate)
 
 
 foldFixedObjectives :: Objective -> (Route, [Requirement]) -> (Route, [Requirement])
@@ -56,6 +57,18 @@ foldFixedObjectives o@(CollectablesAtLocation _ _) (_, _) = error $ "Unexpected 
 
 
 
+foldFixedObjectives (ReachLocation (LCheckpoint (Checkpoint (Chapter chapterNum side) cpNum))) (r,rqs) = (routeCheckpointSet (sideToBool side) chapterNum (cpNum-1) (setComplete True) r, rqs)
+
+foldFixedObjectives (ReachLocation LPico8OldSite) (r,rqs) = (setPicoSite True r, rqs)
+
+foldFixedObjectives (ReachLocation LRockBottom) (r,rqs) = (r, (ReachRockBottom:rqs))
+
+foldFixedObjectives o@(ReachLocation _) (_, _) = error $ "Unexpected objective " ++ show o
+
+
+
+foldFixedObjectives (MessOrder a b c) (r,rqs) = (routeCheckpointSet True 3 2 (addTasks [messOrderToTask a b c]) r, rqs)
+
 
 
 foldFixedObjectives _ (r, rqs) = (r, rqs)
@@ -78,4 +91,7 @@ variantToTask Grabless = "Complete grabless"
 variantToTask Jumpless = "Complete without jumping"
 variantToTask Dashless = "Complete without dashing"
 
-data Requirement = Nothing | Something
+messOrderToTask :: MessSection -> MessSection -> MessSection -> String
+messOrderToTask a b c = "Mess Order: " ++ (intercalate " -> " $ map show [a,b,c])
+
+data Requirement = ReachRockBottom

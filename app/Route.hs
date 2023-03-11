@@ -8,6 +8,7 @@ emptyRoute, Route) where
 
 import Helper
 import BingoData
+
 import Data.List (intercalate)
 import qualified Data.Set as Set
 
@@ -220,13 +221,13 @@ setCheckpoints' :: Int -> (Checkpoint -> Checkpoint) -> [Checkpoint] -> [Checkpo
 setCheckpoints' cpId cpFunc cps = setAt (cpId-1) (cpFunc $ cps !! (cpId-1)) cps
 
 setAllBerriesInChapter :: Int -> Route -> Route
-setAllBerriesInChapter chapId (Route asides bsides other time) = (Route (setAt (chapId-1) (setChapterBerries chapId (asides !! (chapId-1))) asides) bsides other time)
+setAllBerriesInChapter chapId (Route asides bsides other time) = (Route (setAt (chapId-1) (setChapterBerries (asides !! (chapId-1))) asides) bsides other time)
   where
-    setChapterBerries :: Int -> Chapter -> Chapter
-    setChapterBerries chapId (Chapter n cps) = (Chapter n (foldr (setCheckPointBerriesFold chapId) cps [1 .. length cps]))
+    setChapterBerries :: Chapter -> Chapter
+    setChapterBerries (Chapter n cps) = (Chapter n (foldr setCheckPointBerriesFold cps [1 .. length cps]))
 
-    setCheckPointBerriesFold :: Int -> Int -> [Checkpoint] -> [Checkpoint]
-    setCheckPointBerriesFold chapId cpId = setCheckpoints' cpId (addAllBerriesInCheckpoint (berryCount chapId cpId))
+    setCheckPointBerriesFold :: Int -> [Checkpoint] -> [Checkpoint]
+    setCheckPointBerriesFold cpId = setCheckpoints' cpId (addAllBerriesInCheckpoint (berryCount chapId cpId))
 
 setComplete :: Bool -> Checkpoint -> Checkpoint
 setComplete val (Checkpoint n _ bs c h bis ts) = Checkpoint n val bs c h bis ts

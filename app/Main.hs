@@ -20,6 +20,5 @@ main = do
 
 
 tempFilter :: BM.Objective -> Bool
-tempFilter (BM.CollectablesAtLocation (BM.LChapter _) _) = False
-tempFilter (BM.CollectablesAtLocation _ _) = True
+tempFilter (BM.MiscCountTaskAmount _ _) = True
 tempFilter _ = False
