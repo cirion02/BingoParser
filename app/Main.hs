@@ -4,6 +4,7 @@ import Lexer
 import Parser
 import Route
 import Router
+import RouteCorrector
 
 import BingoModel as BM
 
@@ -18,7 +19,7 @@ main = do
 
   let res = foldr foldFixedObjectives (emptyRoute, []) parsedFile
 
-  putStrLn $ showRouteBreakdown $ fst res
+  putStrLn $ showRouteBreakdown $ correctImpossibleRoute $ fst res
 
   mapM_ print $ snd res
 
@@ -29,4 +30,4 @@ main = do
 
 tempFilter :: BM.Objective -> Bool
 tempFilter (BM.DoThingAtLocation _ _) = True
-tempFilter _ = False
+tempFilter _ = False 

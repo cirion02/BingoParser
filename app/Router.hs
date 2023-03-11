@@ -1,6 +1,6 @@
-module Router (foldFixedObjectives, Requirement) where
+module Router (foldFixedObjectives) where
 
-import Route
+import Route hiding (OtherLocations (..), Epilogue (..), Pico (..), Chapter (..), Checkpoint (..))
 import BingoModel
 import BingoData
 

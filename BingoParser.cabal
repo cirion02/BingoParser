@@ -43,6 +43,7 @@ executable BingoParser-exe
       Lexer
       Parser
       Route
+      RouteCorrector
       Router
       Paths_BingoParser
   hs-source-dirs:

@@ -4,7 +4,9 @@ routeAllCheckpointsSet, routeAllCheckpointsSetMultiple,
 setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
 setAllBerriesInChapter, addAllBerriesInCheckpoint, addAllBinosInCheckpoint,
 addPicoBerries, setPicoComplete, setPicoOrb, setPicoSite, setBirdsNest,
-emptyRoute, Route) where
+getCheckpoint, getChapter,
+checkpointIsEmpty, chapterIsEmpty, getCheckpointCount,
+emptyRoute, Route (..), OtherLocations (..), Epilogue (..), Pico (..), Chapter (..), Checkpoint (..)) where
 
 import Helper
 import BingoData
@@ -154,7 +156,7 @@ showRouteBreakdown = fold alg
                      | otherwise      = ""
 
     showCheckPoint :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> String
-    showCheckPoint name complete berries cassette heart binos tasks | checkpointIsEmpty name complete berries cassette heart binos tasks = ""
+    showCheckPoint name complete berries cassette heart binos tasks | checkpointIsEmpty' name complete berries cassette heart binos tasks = ""
                                                                     | checkpointOnlyComplete name complete berries cassette heart binos tasks = "-" ++ name
                                                                     | otherwise = 
       "-" ++ name ++ 
@@ -173,19 +175,35 @@ showRouteBreakdown = fold alg
     showPico _ _ True berries       = "Pico-8:\n-Reach Old Site" ++ if' (null berries) "" ("Berries: " ++ unwords berries)
     showPico _ _ _    berries@(_:_) = "Pico-8:\nBerries: " ++ unwords berries
     showPico _ _ _    _             = ""
-    
-    checkpointIsEmpty :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> Bool
-    checkpointIsEmpty _ True _ _ _ _ _ = False
-    checkpointIsEmpty _ _ (_:_) _ _ _ _ = False
-    checkpointIsEmpty _ _ _ True _ _ _ = False
-    checkpointIsEmpty _ _ _ _ True _ _ = False
-    checkpointIsEmpty _ _ _ _ _ (_:_) _ = False
-    checkpointIsEmpty _ _ _ _ _ _ (_:_) = False
-    checkpointIsEmpty _ _ _ _ _ _ _ = True
 
     checkpointOnlyComplete :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> Bool
     checkpointOnlyComplete _ _ [] False False [] [] = True
     checkpointOnlyComplete _ _ _ _ _ _ _ = False
+
+    checkpointIsEmpty' :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> Bool
+    checkpointIsEmpty' _ True _ _ _ _ _ = False
+    checkpointIsEmpty' _ _ (_:_) _ _ _ _ = False
+    checkpointIsEmpty' _ _ _ True _ _ _ = False
+    checkpointIsEmpty' _ _ _ _ True _ _ = False
+    checkpointIsEmpty' _ _ _ _ _ (_:_) _ = False
+    checkpointIsEmpty' _ _ _ _ _ _ (_:_) = False
+    checkpointIsEmpty' _ _ _ _ _ _ _ = True
+
+
+
+checkpointIsEmpty :: Checkpoint -> Bool
+checkpointIsEmpty (Checkpoint _ True _ _ _ _ _) = False
+checkpointIsEmpty (Checkpoint _ _ _ True _ _ _) = False
+checkpointIsEmpty (Checkpoint _ _ _ _ True _ _) = False
+checkpointIsEmpty (Checkpoint _ _ s _ _ _ _) | not $ null s = False
+checkpointIsEmpty (Checkpoint _ _ _ _ _ s _) | not $ null s = False
+checkpointIsEmpty (Checkpoint _ _ _ _ _ _ s) | not $ null s = False
+checkpointIsEmpty _ = True
+
+chapterIsEmpty :: Chapter -> Bool
+chapterIsEmpty (Chapter _ cps) = and $ map checkpointIsEmpty cps
+
+
 
 routeAllCheckpointsSetMultiple :: Bool -> Int -> [Checkpoint -> Checkpoint] -> Route -> Route
 routeAllCheckpointsSetMultiple aside chapId = flip $ foldr routeSetFunc
@@ -268,11 +286,23 @@ setPicoSite val (Route as bs (OtherLocations (Pico c o _ bes) ep) t) = (Route as
 setBirdsNest :: Bool -> Route -> Route
 setBirdsNest val (Route as bs (OtherLocations p (Epilogue _)) t) = (Route as bs (OtherLocations p (Epilogue val)) t)
 
-{-
-getCheckpointCount :: Int -> Bool -> Route -> Int
-getCheckpointCount chapterNum True (Route as _ _ _) = (\Chapter _ cps -> length cps) $ as !! (chapterNum-1)
-getCheckpointCount chapterNum False (Route _ bs _ _) = (\Chapter _ cps -> length cps) $ bs !! (chapterNum-1)
--}
+
+
+getChapter :: Bool -> Int -> Route -> Chapter
+getChapter True chapterNum (Route as _ _ _) = as !! (chapterNum - 1)
+getChapter False chapterNum (Route _ bs _ _) = bs !! (chapterNum - 1)
+
+getCheckpoint' :: Int -> Chapter -> Checkpoint
+getCheckpoint' cpNum (Chapter _ cps) = cps !! (cpNum - 1)
+
+getCheckpoint ::  Bool -> Int -> Int -> Route -> Checkpoint
+getCheckpoint aside chapNum cpNum r = getCheckpoint' cpNum $ getChapter aside chapNum r
+
+
+getCheckpointCount :: Bool -> Int -> Route -> Int
+getCheckpointCount True chapterNum (Route as _ _ _) = (\(Chapter _ cps) -> length cps) $ as !! (chapterNum-1)
+getCheckpointCount False chapterNum (Route _ bs _ _) = (\(Chapter _ cps) -> length cps) $ bs !! (chapterNum-1)
+
 
 emptyCheckpoint :: Name -> Checkpoint
 emptyCheckpoint name = Checkpoint name False Set.empty False False Set.empty Set.empty
