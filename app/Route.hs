@@ -1,5 +1,6 @@
 module Route (blueHeartCount, showRouteBreakdown, 
 routeCheckpointSet, routeCheckpointSetMultiple, 
+routeAllCheckpointsSet, routeAllCheckpointsSetMultiple,
 setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
 emptyRoute, Route) where
 
@@ -12,7 +13,7 @@ type Binos = Set.Set Int
 type Cassette = Bool
 type Heart = Bool
 type Complete = Bool
-type OtherTasks = [String]
+type OtherTasks = Set.Set String
 
 type Name = String
 type Time = Float
@@ -108,7 +109,7 @@ showRouteBreakdown = fold alg
         id,
         id,
         map show . Set.elems,
-        id
+        Set.elems
       )
 
     showChapter :: String -> [String] -> String
@@ -142,10 +143,25 @@ showRouteBreakdown = fold alg
     checkpointOnlyComplete _ _ [] False False [] [] = True
     checkpointOnlyComplete _ _ _ _ _ _ _ = False
 
-routeCheckpointSetMultiple :: Bool -> Int -> Int -> Route -> [Checkpoint -> Checkpoint] -> Route
-routeCheckpointSetMultiple aside hapId cpId = foldr routeSetFunc
+routeAllCheckpointsSetMultiple :: Bool -> Int -> Route -> [Checkpoint -> Checkpoint] -> Route
+routeAllCheckpointsSetMultiple aside chapId = foldr routeSetFunc
   where
-    routeSetFunc = routeCheckpointSet aside hapId cpId 
+    routeSetFunc = routeAllCheckpointsSet aside chapId
+
+routeAllCheckpointsSet :: Bool -> Int -> (Checkpoint -> Checkpoint) -> Route -> Route
+routeAllCheckpointsSet True chapId cpFunc (Route asides bsides time) = Route (setAllCheckpointsChapters' chapId cpFunc asides) bsides time
+routeAllCheckpointsSet False chapId cpFunc (Route asides bsides time) = Route asides (setAllCheckpointsChapters' chapId cpFunc bsides) time
+
+setAllCheckpointsChapters' :: Int -> (Checkpoint -> Checkpoint) -> [Chapter] -> [Chapter]
+setAllCheckpointsChapters' chapId cpFunc chaps = setAt (chapId-1) (setAllCheckpointsChapter' cpFunc (chaps !! (chapId-1))) chaps
+
+setAllCheckpointsChapter' :: (Checkpoint -> Checkpoint) -> Chapter -> Chapter
+setAllCheckpointsChapter' cpFunc (Chapter n cps) = Chapter n $ map cpFunc cps
+
+routeCheckpointSetMultiple :: Bool -> Int -> Int -> Route -> [Checkpoint -> Checkpoint] -> Route
+routeCheckpointSetMultiple aside chapId cpId = foldr routeSetFunc
+  where
+    routeSetFunc = routeCheckpointSet aside chapId cpId 
 
 routeCheckpointSet :: Bool -> Int -> Int -> (Checkpoint -> Checkpoint) -> Route -> Route
 routeCheckpointSet True chapId cpId cpFunc (Route asides bsides time) = Route (setChapters' chapId cpId cpFunc asides) bsides time
@@ -176,7 +192,7 @@ addBinos :: [Int] -> Checkpoint -> Checkpoint
 addBinos val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h (Set.union bis $ Set.fromList val) ts
 
 addTasks :: [String] -> Checkpoint -> Checkpoint
-addTasks val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h bis $ ts ++ val
+addTasks val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h bis (Set.union ts $ Set.fromList val)
 
 {-
 type ASides = [Chapter]
@@ -190,7 +206,7 @@ data Route = Route ASides BSides Time
 -}
 
 emptyCheckpoint :: Name -> Checkpoint
-emptyCheckpoint name = Checkpoint name False Set.empty False False Set.empty []
+emptyCheckpoint name = Checkpoint name False Set.empty False False Set.empty Set.empty
 
 createEmptyChapter :: Name -> [Name] -> Chapter
 createEmptyChapter chaptername cpNames = Chapter chaptername $ map emptyCheckpoint cpNames
