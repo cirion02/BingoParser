@@ -92,13 +92,13 @@ showRouteBreakdown = fold alg
     alg :: RouteAlgebra String String String String String String String [String] [String] Bool Bool Bool [String] String
     alg = (
         id,
-        (\a b t -> a ++ "\n\n\n\n" ++ b ++ "\n\n\n\n" ++ t),
-        (\cs -> "A-sides:\n\n" ++ intercalate "\n\n" (filter (\a -> a /= "") cs)),
-        (\cs -> "B-sides:\n\n" ++ intercalate "\n\n" (filter (\a -> a /= "") cs)),
+        \a b t -> a ++ "\n\n\n\n" ++ b ++ "\n\n\n\n" ++ t,
+        \cs -> "A-sides:\n\n" ++ intercalate "\n\n" (filter (/= "") cs),
+        \cs -> "B-sides:\n\n" ++ intercalate "\n\n" (filter (/= "") cs),
         showChapter,
         showCheckPoint,
         id,
-        (\_ -> "Estimated Time: Unknown"),
+        const "Estimated Time: Unknown",
         map show,
         id,
         id,
@@ -108,21 +108,21 @@ showRouteBreakdown = fold alg
       )
 
     showChapter :: String -> [String] -> String
-    showChapter n cs | filter (\a -> a /= "") cs == [] = ""
-                     | otherwise                       = n ++ ":\n" ++ intercalate "\n" (filter (\a -> a /= "") cs)
+    showChapter n cs | not $ any (/= "") cs = ""
+                     | otherwise            = n ++ ":\n" ++ intercalate "\n" (filter (/= "") cs)
 
     showCheckPoint :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> String
     showCheckPoint name complete berries cassette heart binos tasks | checkpointIsEmpty name complete berries cassette heart binos tasks = ""
                                                                     | checkpointOnlyComplete name complete berries cassette heart binos tasks = "-" ++ name
                                                                     | otherwise = 
       "-" ++ name ++ 
-      (if' complete "" " (Do not finish)") ++":\n  " ++ 
-      intercalate "\n  " (filter (\a -> a /= "") $ 
+      if' complete "" " (Do not finish)" ++":\n  " ++ 
+      intercalate "\n  " (filter (/= "") $ 
       [
-        (if' (length berries > 0) ("Berries: " ++ intercalate " " berries) ""),
-        (if' cassette "Cassette" ""),
-        (if' heart "Heart" ""),
-        (if' (length binos > 0) ("Binos: " ++ intercalate " " binos) "")
+        if' (null berries) ("Berries: " ++ unwords berries) "",
+        if' cassette "Cassette" "",
+        if' heart "Heart" "",
+        if' (null binos) ("Binos: " ++ unwords binos) ""
       ] ++ tasks)
     
     checkpointIsEmpty :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> Bool
