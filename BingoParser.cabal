@@ -37,6 +37,7 @@ library
 executable BingoParser-exe
   main-is: Main.hs
   other-modules:
+      BingoData
       BingoModel
       Helper
       Lexer

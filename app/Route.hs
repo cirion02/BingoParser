@@ -2,10 +2,12 @@ module Route (blueHeartCount, showRouteBreakdown,
 routeCheckpointSet, routeCheckpointSetMultiple, 
 routeAllCheckpointsSet, routeAllCheckpointsSetMultiple,
 setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
+setAllBerriesInChapter, addAllBerriesInCheckpoint, addAllBinosInCheckpoint,
 addPicoBerries, setPicoComplete, setPicoOrb, setPicoSite, setBirdsNest,
 emptyRoute, Route) where
 
 import Helper
+import BingoData
 import Data.List (intercalate)
 import qualified Data.Set as Set
 
@@ -217,6 +219,15 @@ setChapter' cpId cpFunc (Chapter n cps) = Chapter n $ setCheckpoints' cpId cpFun
 setCheckpoints' :: Int -> (Checkpoint -> Checkpoint) -> [Checkpoint] -> [Checkpoint]
 setCheckpoints' cpId cpFunc cps = setAt (cpId-1) (cpFunc $ cps !! (cpId-1)) cps
 
+setAllBerriesInChapter :: Int -> Route -> Route
+setAllBerriesInChapter chapId (Route asides bsides other time) = (Route (setAt (chapId-1) (setChapterBerries chapId (asides !! (chapId-1))) asides) bsides other time)
+  where
+    setChapterBerries :: Int -> Chapter -> Chapter
+    setChapterBerries chapId (Chapter n cps) = (Chapter n (foldr (setCheckPointBerriesFold chapId) cps [1 .. length cps]))
+
+    setCheckPointBerriesFold :: Int -> Int -> [Checkpoint] -> [Checkpoint]
+    setCheckPointBerriesFold chapId cpId = setCheckpoints' cpId (addAllBerriesInCheckpoint (berryCount chapId cpId))
+
 setComplete :: Bool -> Checkpoint -> Checkpoint
 setComplete val (Checkpoint n _ bs c h bis ts) = Checkpoint n val bs c h bis ts
 
@@ -235,6 +246,12 @@ addBinos val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h (Set.union b
 addTasks :: [String] -> Checkpoint -> Checkpoint
 addTasks val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h bis (Set.union ts $ Set.fromList val)
 
+addAllBerriesInCheckpoint :: Int -> Checkpoint -> Checkpoint 
+addAllBerriesInCheckpoint count (Checkpoint n f _ c h bis ts) = (Checkpoint n f (Set.fromList [1 .. count]) c h bis ts)
+
+addAllBinosInCheckpoint :: Int -> Checkpoint -> Checkpoint 
+addAllBinosInCheckpoint count (Checkpoint n f b c h _ ts) = (Checkpoint n f b c h (Set.fromList [1 .. count]) ts)
+
 addPicoBerries :: [Int] -> Route -> Route
 addPicoBerries val (Route as bs (OtherLocations (Pico c o s bes) ep) t) = (Route as bs (OtherLocations (Pico c o s (Set.union bes $ Set.fromList val)) ep) t)
 
@@ -251,14 +268,9 @@ setBirdsNest :: Bool -> Route -> Route
 setBirdsNest val (Route as bs (OtherLocations p (Epilogue _)) t) = (Route as bs (OtherLocations p (Epilogue val)) t)
 
 {-
-type ASides = [Chapter]
-type BSides = [Chapter]
-
-data Checkpoint = Checkpoint Name Complete Berries Cassette Heart Binos OtherTasks
-
-data Chapter = Chapter Name [Checkpoint]
-
-data Route = Route ASides BSides Time
+getCheckpointCount :: Int -> Bool -> Route -> Int
+getCheckpointCount chapterNum True (Route as _ _ _) = (\Chapter _ cps -> length cps) $ as !! (chapterNum-1)
+getCheckpointCount chapterNum False (Route _ bs _ _) = (\Chapter _ cps -> length cps) $ bs !! (chapterNum-1)
 -}
 
 emptyCheckpoint :: Name -> Checkpoint

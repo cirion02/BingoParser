@@ -5,6 +5,8 @@ import Parser
 import Route
 import Router
 
+import BingoModel as BM
+
 main :: IO ()
 main = do
   bingoFile <- readFile "BingoGenerators\\lockout.txt"
@@ -12,6 +14,12 @@ main = do
   
   let parsedFile = happyParseTokens temp
 
-  mapM_ print parsedFile
+  mapM_ print $ filter tempFilter parsedFile
 
   putStrLn $ showRouteBreakdown $ fst $ foldr foldFixedObjectives (emptyRoute, []) parsedFile
+
+
+tempFilter :: BM.Objective -> Bool
+tempFilter (BM.CollectablesAtLocation (BM.LChapter _) _) = False
+tempFilter (BM.CollectablesAtLocation _ _) = True
+tempFilter _ = False
