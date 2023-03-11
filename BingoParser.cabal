@@ -31,6 +31,7 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 executable BingoParser-exe
@@ -50,6 +51,7 @@ executable BingoParser-exe
       BingoParser
     , array
     , base >=4.7 && <5
+    , containers
   default-language: Haskell2010
 
 test-suite BingoParser-test
@@ -64,4 +66,5 @@ test-suite BingoParser-test
       BingoParser
     , array
     , base >=4.7 && <5
+    , containers
   default-language: Haskell2010

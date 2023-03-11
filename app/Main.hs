@@ -3,6 +3,7 @@ module Main (main) where
 import Lexer
 import Parser
 import Route
+import Router
 
 main :: IO ()
 main = do
@@ -13,4 +14,4 @@ main = do
 
   mapM_ print parsedFile
 
-  putStrLn $ showRouteBreakdown emptyRoute
+  putStrLn $ showRouteBreakdown $ fst $ foldr foldFixedObjectives (emptyRoute, []) parsedFile

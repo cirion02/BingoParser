@@ -1,10 +1,14 @@
-module Route where
+module Route (blueHeartCount, showRouteBreakdown, 
+routeCheckpointSet, routeCheckpointSetMultiple, 
+setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
+emptyRoute, Route) where
 
 import Helper
 import Data.List (intercalate)
+import qualified Data.Set as Set
 
-type Berries = [Int]
-type Binos = [Int]
+type Berries = Set.Set Int
+type Binos = Set.Set Int
 type Cassette = Bool
 type Heart = Bool
 type Complete = Bool
@@ -66,7 +70,7 @@ ignore2 _ _ = ()
 
 boolToInt :: Bool -> Int
 boolToInt True  = 1
-boolToInt False = 1
+boolToInt False = 0
 
 blueHeartCount :: Route -> Int
 blueHeartCount = fold alg
@@ -99,11 +103,11 @@ showRouteBreakdown = fold alg
         showCheckPoint,
         id,
         const "Estimated Time: Unknown",
-        map show,
+        map show . Set.elems,
         id,
         id,
         id,
-        map show,
+        map show . Set.elems,
         id
       )
 
@@ -119,10 +123,10 @@ showRouteBreakdown = fold alg
       if' complete "" " (Do not finish)" ++":\n  " ++ 
       intercalate "\n  " (filter (/= "") $ 
       [
-        if' (null berries) ("Berries: " ++ unwords berries) "",
+        if' (null berries) "" ("Berries: " ++ unwords berries),
         if' cassette "Cassette" "",
         if' heart "Heart" "",
-        if' (null binos) ("Binos: " ++ unwords binos) ""
+        if' (null binos) "" ("Binos: " ++ unwords binos)
       ] ++ tasks)
     
     checkpointIsEmpty :: String -> Bool -> [String] -> Bool -> Bool -> [String] -> [String] -> Bool
@@ -138,8 +142,41 @@ showRouteBreakdown = fold alg
     checkpointOnlyComplete _ _ [] False False [] [] = True
     checkpointOnlyComplete _ _ _ _ _ _ _ = False
 
+routeCheckpointSetMultiple :: Bool -> Int -> Int -> Route -> [Checkpoint -> Checkpoint] -> Route
+routeCheckpointSetMultiple aside hapId cpId = foldr routeSetFunc
+  where
+    routeSetFunc = routeCheckpointSet aside hapId cpId 
 
+routeCheckpointSet :: Bool -> Int -> Int -> (Checkpoint -> Checkpoint) -> Route -> Route
+routeCheckpointSet True chapId cpId cpFunc (Route asides bsides time) = Route (setChapters' chapId cpId cpFunc asides) bsides time
+routeCheckpointSet False chapId cpId cpFunc (Route asides bsides time) = Route asides (setChapters' chapId cpId cpFunc bsides) time
 
+setChapters' :: Int -> Int -> (Checkpoint -> Checkpoint) -> [Chapter] -> [Chapter]
+setChapters' chapId cpId cpFunc chaps = setAt (chapId-1) (setChapter' cpId cpFunc (chaps !! (chapId-1))) chaps
+
+setChapter' :: Int -> (Checkpoint -> Checkpoint) -> Chapter -> Chapter
+setChapter' cpId cpFunc (Chapter n cps) = Chapter n $ setCheckpoints' cpId cpFunc cps
+
+setCheckpoints' :: Int -> (Checkpoint -> Checkpoint) -> [Checkpoint] -> [Checkpoint]
+setCheckpoints' cpId cpFunc cps = setAt (cpId-1) (cpFunc $ cps !! (cpId-1)) cps
+
+setComplete :: Bool -> Checkpoint -> Checkpoint
+setComplete val (Checkpoint n _ bs c h bis ts) = Checkpoint n val bs c h bis ts
+
+addBerries :: [Int] -> Checkpoint -> Checkpoint
+addBerries val (Checkpoint n f bs c h bis ts) = Checkpoint n f (Set.union bs $ Set.fromList val) c h bis ts
+
+setCassette :: Bool -> Checkpoint -> Checkpoint
+setCassette val (Checkpoint n f bs _ h bis ts) = Checkpoint n f bs val h bis ts
+
+setHeart :: Bool -> Checkpoint -> Checkpoint
+setHeart val (Checkpoint n f bs c _ bis ts) = Checkpoint n f bs c val bis ts
+
+addBinos :: [Int] -> Checkpoint -> Checkpoint
+addBinos val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h (Set.union bis $ Set.fromList val) ts
+
+addTasks :: [String] -> Checkpoint -> Checkpoint
+addTasks val (Checkpoint n f bs c h bis ts) = Checkpoint n f bs c h bis $ ts ++ val
 
 {-
 type ASides = [Chapter]
@@ -153,7 +190,7 @@ data Route = Route ASides BSides Time
 -}
 
 emptyCheckpoint :: Name -> Checkpoint
-emptyCheckpoint name = Checkpoint name False [] False False [] []
+emptyCheckpoint name = Checkpoint name False Set.empty False False Set.empty []
 
 createEmptyChapter :: Name -> [Name] -> Chapter
 createEmptyChapter chaptername cpNames = Chapter chaptername $ map emptyCheckpoint cpNames
@@ -167,9 +204,9 @@ emptyASides = [
     createEmptyChapter "Mirror Temple" ["Start", "Depths", "Unravelling", "Search", "Recue"],
     createEmptyChapter "Reflection" ["Start", "Lake", "Hollows", "Reflection", "Rock Bottom", "Resolution"],
     createEmptyChapter "Summit" ["0M", "500M", "1000M", "1500M", "2000M", "2500M", "3000M"],
-    createEmptyChapter "Epilogue" ["Epilogue"],
     createEmptyChapter "Core" ["Start", "Into the Core", "Hot and Cold", "Heart of the Mountain"],
-    createEmptyChapter "Farewell" ["Start", "Singular", "Power Source", "Remembered", "Event Horizon", "The rest of farewell"]
+    createEmptyChapter "Farewell" ["Start", "Singular", "Power Source", "Remembered", "Event Horizon", "The rest of farewell"],
+    createEmptyChapter "Epilogue" ["Epilogue"]
   ]
 
 emptyBSides :: BSides
