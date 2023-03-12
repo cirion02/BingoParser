@@ -2,7 +2,7 @@ module Route (blueHeartCount, showRouteBreakdown,
 routeCheckpointSet, routeCheckpointSetMultiple, 
 routeAllCheckpointsSet, routeAllCheckpointsSetMultiple,
 setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
-setAllBerriesInChapter, addAllBerriesInCheckpoint, addAllBinosInCheckpoint,
+setAllBerriesInChapter, setAllBinosInChapter, addAllBerriesInCheckpoint, addAllBinosInCheckpoint,
 addPicoBerries, setPicoComplete, setPicoOrb, setPicoSite, setBirdsNest,
 getCheckpoint, getChapter,
 checkpointIsEmpty, chapterIsEmpty, getCheckpointCount,
@@ -246,6 +246,22 @@ setAllBerriesInChapter chapId (Route asides bsides other time) = (Route (setAt (
 
     setCheckPointBerriesFold :: Int -> [Checkpoint] -> [Checkpoint]
     setCheckPointBerriesFold cpId = setCheckpoints' cpId (addAllBerriesInCheckpoint (berryCount chapId cpId))
+
+setAllBinosInChapter :: Bool -> Int -> Route -> Route
+setAllBinosInChapter side@True chapId (Route asides bsides other time) = (Route (setAt (chapId-1) (setChapterBinos (asides !! (chapId-1))) asides) bsides other time)
+  where
+    setChapterBinos :: Chapter -> Chapter
+    setChapterBinos (Chapter n cps) = (Chapter n (foldr setCheckPointBinosFold cps [1 .. length cps]))
+
+    setCheckPointBinosFold :: Int -> [Checkpoint] -> [Checkpoint]
+    setCheckPointBinosFold cpId = setCheckpoints' cpId (addAllBinosInCheckpoint (binoCount side chapId cpId))
+setAllBinosInChapter side@False chapId (Route asides bsides other time) = (Route asides (setAt (chapId-1) (setChapterBinos (asides !! (chapId-1))) bsides) other time)
+  where
+    setChapterBinos :: Chapter -> Chapter
+    setChapterBinos (Chapter n cps) = (Chapter n (foldr setCheckPointBinosFold cps [1 .. length cps]))
+
+    setCheckPointBinosFold :: Int -> [Checkpoint] -> [Checkpoint]
+    setCheckPointBinosFold cpId = setCheckpoints' cpId (addAllBinosInCheckpoint (binoCount side chapId cpId))
 
 setComplete :: Bool -> Checkpoint -> Checkpoint
 setComplete val (Checkpoint n _ bs c h bis ts) = Checkpoint n val bs c h bis ts

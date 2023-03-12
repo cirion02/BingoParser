@@ -8,12 +8,18 @@ import RouteCorrector
 
 import BingoModel as BM
 
+import Data.List (intercalate, sort)
+
 main :: IO ()
 main = do
-  bingoFile <- readFile "BingoGenerators\\lockout.txt"
+  bingoFile <- readFile "BingoGenerators\\blackout.txt"
   let temp = alexScanTokens bingoFile
+
+  print temp
   
   let parsedFile = happyParseTokens temp
+
+  writeFile "output\\output.txt" $ intercalate "\n" $ sort $ map show parsedFile
 
   mapM_ print $ filter tempFilter parsedFile
 

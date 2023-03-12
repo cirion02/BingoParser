@@ -21,23 +21,27 @@ tokens :-
   "Read the Poem"               {\_ -> TReadPoem}
   "Find Letter and PICO-8"      {\_ -> TFindLetter}
   "Read Diary"                  {\_ -> TReadDiary}
+  "Read the Diary"              {\_ -> TReadDiary}
   "Find Theo's Phone"           {\_ -> TFindTheoPhone}
   "Reflection Cutscene"         {\_ -> TReflectionCutscene}
   "Get the Orb"                 {\_ -> TGetPicoOrb}
   "Switch to Ice on the right"  {\_ -> TSwitchIce}
   "Only top route"              {\_ -> TTopRoute}
   "Only bottom route"           {\_ -> TBottomRoute}
-  "Easteregg Room"              {\_ -> TEasterEggRoom}
+  "Easteregg "[Rr]"oom"         {\_ -> TEasterEggRoom}
   "Reach the Orb"               {\_ -> TReachCoreOrb}
   "Reach an Intro Car"          {\_ -> TReachIntroCar}
   "Visit the Bird's Nest"       {\_ -> TBirdsNest}
   "All Flags"                   {\_ -> TAllFlags}
+  "Take hidden path"            {\_ -> THiddenPath}
 
+  "Don't skip final 4A Cutscene" {\_ -> TFinal4ACutscene}
   "Hit a Kevin block from all 4 sides" {\_ -> TKevin4Sides}
   "Reach Rock Bottom (6A/6B Checkpoint)" {\_ -> TReachRockBottom}
   "Winged Golden Berry"         {\_ -> TWingedGolden}
 
   "2000M (7B Checkpoint)"       {\_ -> TCheckpoint ((7,5),'B')}
+  "Rock Bottom (6B Checkpoint)" {\_ -> TCheckpoint ((6,3),'B')}
   "("($chars|$white)+")"        ;
   "Crossing"                    {\_ -> TCheckpoint ((1,2),'A')}
   "Chasm"                       {\_ -> TCheckpoint ((1,3),'A')}
@@ -69,6 +73,7 @@ tokens :-
   "Hot and Cold"                {\_ -> TCheckpoint ((8,3),'A')}
   "Heart of the Mountain"       {\_ -> TCheckpoint ((8,4),'A')}
   "Power Source"                {\_ -> TCheckpoint ((9,3),'A')}
+  "Remembered"                  {\_ -> TCheckpoint ((9,4),'A')}
   "Event Horizon"               {\_ -> TCheckpoint ((9,5),'A')}
   "Library"                     {\_ -> TCheckpoint ((3,3),'B')}
   "Forsaken City"               {\_ -> TChapterName 1}
@@ -93,7 +98,7 @@ tokens :-
   [Hh]"eart"s?                  {\_ -> THeart}
   [Bb]"lue"                     {\_ -> TBlue}
   [Rr]"ed "[Hh]"eart"s?         {\_ -> TRedHeart}
-  "optional Theo cutscenes"     {\_ -> TTheo}
+  "optional Theo "[Cc]"utscenes" {\_ -> TTheo}
   "Talk to Theo"                {\_ -> TTheo}
   [Ww]"inged"                   {\_ -> TWinged}
   [Ss]"eeded"                   {\_ -> TSeeded}
@@ -125,6 +130,7 @@ tokens :-
   "in"                          {\_ -> TIn}
   "of"                          {\_ -> TOf}
   "and"                         {\_ -> TAnd}
+  "before"                      {\_ -> TBefore}
   [Gg]"et"                      {\_ -> TGet}
   [Aa]"ll"                      {\_ -> TAll}
   [Uu]"se"                      {\_ -> TUse}

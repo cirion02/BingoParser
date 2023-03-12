@@ -29,8 +29,10 @@ import GHC.Float (int2Float)
   introcar {TReachIntroCar}
   birdsnest {TBirdsNest}
   allflags {TAllFlags}
+  hiddenpath {THiddenPath}
 
   kevin4 {TKevin4Sides}
+  final4a {TFinal4ACutscene}
   wingedgolden {TWingedGolden}
   reachrockbottom {TReachRockBottom}
 
@@ -79,6 +81,7 @@ import GHC.Float (int2Float)
   all {TAll}
   and {TAnd}
   use {TUse}
+  before {TBefore}
   num {TInt $$}
   text {TString $$}
   
@@ -138,9 +141,11 @@ MessCP : books                                     {Books}
 EdgeCases : reach chapterName in pico8             {ReachLocation LPico8OldSite}
           | kevin4                                 {DoThingAtLocation KevinOn4Sides (LCheckpoint (Checkpoint (Chapter 6 ASide) 2))}
           | easteregg in reflection                {DoThingAtLocation EasterEggRoom (LCheckpoint (Checkpoint (Chapter 6 ASide) 4))}
-          | introcar in chapterName                {DoThingAtLocation ReachIntroCar (LCheckpoint (Checkpoint (Chapter 9 ASide) 4))}
+          | introcar in Location                   {DoThingAtLocation ReachIntroCar (LCheckpoint (Checkpoint (Chapter 9 ASide) 4))}
           | wingedgolden                           {CollectablesAtLocation (LChapter (Chapter 1 ASide)) WingedGolden}
           | reachrockbottom                        {ReachLocation LRockBottom}
+          | hiddenpath before Checkpoint           {DoThingAtLocation TakeHiddenPath (LCheckpoint (Checkpoint (Chapter 4 ASide) 3))}
+          | final4a                                {DoThingAtLocation DontSkipFinalCutscene (LCheckpoint (Checkpoint (Chapter 4 ASide) 4))}
 
 
 ChapterType : aside                                {ASide}

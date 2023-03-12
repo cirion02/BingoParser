@@ -39,6 +39,8 @@ foldFixedObjectives (CollectablesAtLocation (LChapter (Chapter chapterNum ASide)
   routeCheckpointSet True chapterNum (getCassetteCp chapterNum) (setCassette True) r
   , rqs)
 
+foldFixedObjectives (CollectablesAtLocation (LChapter (Chapter chapterNum side)) Bino) (r,rqs) = (setAllBinosInChapter (sideToBool side) chapterNum r, rqs)
+
 foldFixedObjectives (CollectablesAtLocation (LChapter (Chapter 1 ASide)) WingedGolden) (r,rqs) = (
   routeCheckpointSet True 1 3 (addTasks [variantToTask Dashless, "Winged Golden Berry"]) $  
   routeCheckpointSet True 1 2 (addTasks [variantToTask Dashless]) $ 
@@ -121,6 +123,8 @@ doSpecificThingToTask EasterEggRoom = "Visit easter egg room"
 doSpecificThingToTask ReachCoreOrb = "Reach the badeline orb"
 doSpecificThingToTask ReachIntroCar = "Reach intro car"
 doSpecificThingToTask KevinOn4Sides = "Hit a kevin on all 4 sides"
+doSpecificThingToTask TakeHiddenPath = "Take hidden path at the end"
+doSpecificThingToTask DontSkipFinalCutscene = "Don't skip the final cutscene"
 doSpecificThingToTask AllFlags = error "AllFlags should not be asked for it's name"
 doSpecificThingToTask BirdsNest = error "BirdsNest should not be asked for it's name"
 doSpecificThingToTask GetPicoOrb = error "GetPicoOrb should not be asked for it's name"

@@ -3,6 +3,7 @@ module BingoModel where
 data Token = 
     TNewLine                     |
     TKevin4Sides                 |
+    TFinal4ACutscene             |
     TWingedGolden                |
     TReachRockBottom             |
     TReadPoem                    |
@@ -18,6 +19,7 @@ data Token =
     TReachCoreOrb                |
     TReachIntroCar               |
     TBirdsNest                   |
+    THiddenPath                  |
     TAllFlags                    |
     TChapter String              |
     TChapterName Int             |
@@ -64,6 +66,7 @@ data Token =
     TAnd                         |
     TIn                          |
     TOf                          |
+    TBefore                      |
     TAll                         |
     TUse                         |
     TInt Int                     |
@@ -96,7 +99,8 @@ data MessSection = Books | Towels | Chests
   deriving (Eq, Show)
 
 data DoSpecificThing = ReadPoem | FindLetter | ReadDiary | FindTheoPhone | ReflectionCutscene | GetPicoOrb | SwitchIce 
-                     | TopRoute | BottomRoute | EasterEggRoom | ReachCoreOrb | ReachIntroCar | BirdsNest | AllFlags | KevinOn4Sides
+                     | TopRoute | BottomRoute | EasterEggRoom | ReachCoreOrb | ReachIntroCar | BirdsNest | AllFlags 
+                     | KevinOn4Sides | TakeHiddenPath | DontSkipFinalCutscene
   deriving (Eq, Show)
 
 data Objective = 

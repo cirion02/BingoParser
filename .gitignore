@@ -3,3 +3,4 @@
 src/
 test/
 stack.yaml.lock
+output/
