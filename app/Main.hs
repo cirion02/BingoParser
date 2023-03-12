@@ -3,7 +3,7 @@ module Main (main) where
 import Lexer
 import Parser
 import Route
-import Router
+import FixedObjectiveRouter
 import RouteCorrector
 
 import BingoModel as BM
@@ -12,7 +12,7 @@ import Data.List (intercalate, sort)
 
 main :: IO ()
 main = do
-  bingoFile <- readFile "BingoGenerators\\blackout.txt"
+  bingoFile <- readFile "BingoGenerators\\both.txt"
   let temp = alexScanTokens bingoFile
 
   print temp
@@ -35,5 +35,5 @@ main = do
 
 
 tempFilter :: BM.Objective -> Bool
-tempFilter (BM.DoThingAtLocation _ _) = True
+tempFilter (BM.CollectablesAmountInChapters _ _ _) = True
 tempFilter _ = False 

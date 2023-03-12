@@ -1,4 +1,4 @@
-module Router (foldFixedObjectives) where
+module FixedObjectiveRouter (foldFixedObjectives, Requirement (..)) where
 
 import Route hiding (OtherLocations (..), Epilogue (..), Pico (..), Chapter (..), Checkpoint (..))
 import BingoModel
@@ -7,7 +7,7 @@ import BingoData
 import Data.List (intercalate)
 
 
-foldFixedObjectives :: Objective -> (Route, [Objective]) -> (Route, [Objective])
+foldFixedObjectives :: Objective -> (Route, [Requirement]) -> (Route, [Requirement])
 
 foldFixedObjectives (CompleteWithVariant (LCheckpoint (Checkpoint (Chapter chapterNum side) checkpointNum)) variant) (r, rqs) = (routeCheckpointSetMultiple (sideToBool side) chapterNum checkpointNum [setComplete True, addTasks [variantToTask variant]] r, rqs)
 
@@ -63,7 +63,7 @@ foldFixedObjectives (ReachLocation (LCheckpoint (Checkpoint (Chapter chapterNum 
 
 foldFixedObjectives (ReachLocation LPico8OldSite) (r,rqs) = (setPicoSite True r, rqs)
 
-foldFixedObjectives o@(ReachLocation LRockBottom) (r,rqs) = (r, (o:rqs))
+foldFixedObjectives (ReachLocation LRockBottom) (r,rqs) = (r, (RReachRockBottom:rqs))
 
 foldFixedObjectives o@(ReachLocation _) (_, _) = error $ "Unexpected objective " ++ show o
 
@@ -82,7 +82,7 @@ foldFixedObjectives (DoThingAtLocation BirdsNest LEpilogue) (r,rqs) = (setBirdsN
 
 foldFixedObjectives (DoThingAtLocation GetPicoOrb LPico8) (r,rqs) = (setPicoOrb True r, rqs)
 
-foldFixedObjectives o@(DoThingAtLocation AllFlags _) (r,rqs) = (r, (o:rqs))
+foldFixedObjectives (DoThingAtLocation AllFlags _) (r,rqs) = (r, (RAllFlags:rqs))
 
 foldFixedObjectives (DoThingAtLocation thing (LCheckpoint (Checkpoint (Chapter chapterNum side) cpNum))) (r,rqs) = (routeCheckpointSet (sideToBool side) chapterNum cpNum (addTasks [doSpecificThingToTask thing]) r,rqs)
 
@@ -90,12 +90,34 @@ foldFixedObjectives (DoThingAtLocation thing (LChapter (Chapter chapterNum side)
 
 foldFixedObjectives o@(DoThingAtLocation _ _) (_, _) = error $ "Unexpected objective " ++ show o
 
-
 foldFixedObjectives (MessOrder a b c) (r,rqs) = (routeCheckpointSet True 3 2 (addTasks [messOrderToTask a b c]) r, rqs)
 
 
+foldFixedObjectives (CollectablesAmountAtLocation (LCheckpoint (Checkpoint (Chapter chapterNum side) cpNum)) i Key) (r,rqs) = (routeCheckpointSet (sideToBool side) chapterNum cpNum (addTasks ["Get " ++ show i ++ " keys"]) r, rqs)
 
-foldFixedObjectives o (r, rqs) = (r, (o:rqs))
+foldFixedObjectives o@(CollectablesAmountAtLocation (LCheckpoint (Checkpoint (Chapter _ _) _)) _ _) (_,_) = error $ "Unexpected objective " ++ show o
+
+foldFixedObjectives (CollectablesAmountAtLocation (LChapter (Chapter chapterNum side)) i c) (r,rqs) = (r, (map (RCollectablesInChapter (sideToBool side) chapterNum i) $ collectableToRCollectable c) ++ rqs)
+
+foldFixedObjectives (CollectablesAmountAtLocation LPico8 i Berry) (r,rqs) = (r, (RPico8Berries i:rqs))
+
+
+foldFixedObjectives (CollectableAmount c i) (r,rqs) = (r, (map (RCollectableCount i) $ collectableToRCollectable c) ++ rqs)
+
+
+foldFixedObjectives (MiscCountTaskAmount t i) (r,rqs) = (r, (RCollectableCount i (miscTaskToRCollectable t) : rqs))
+
+
+foldFixedObjectives (ChapterTypeAmount t i) (r,rqs) = (r, (map (RCollectableCount i) $ chapterTypeToRCollectable t) ++ rqs)
+
+foldFixedObjectives (CollectablesAmountInChapters i c j) (r,rqs) = (r, (map (RCollectableCountInChapters i j) $ collectableToRCollectable c) ++ rqs)
+
+foldFixedObjectives (CollectablesAmountInChapterType i c t) (r,rqs) = (r, (map (RCollectableCountInChapterType (sideToBool t) i) $ collectableToRCollectable c) ++ rqs)
+
+foldFixedObjectives o (_, _) = error $ "Unexpected objective " ++ show o
+
+
+
 
 sideToBool :: ChapterType -> Bool
 sideToBool ASide = True
@@ -133,3 +155,46 @@ getSpecificThingCp :: DoSpecificThing -> Int
 getSpecificThingCp ReadPoem = 3
 getSpecificThingCp FindTheoPhone = 1
 getSpecificThingCp t = error $ "getSpecificThing no suppoted for" ++ show t
+
+collectableToRCollectable :: Collectable -> [RCollectable]
+collectableToRCollectable Cassette = [RCassette]
+collectableToRCollectable Heart = [RHeart]
+collectableToRCollectable BlueHeart = [RBlueHeart]
+collectableToRCollectable RedHeart = [RBSide]
+collectableToRCollectable BlueAndRedHeart = [RBlueHeart, RBSide]
+collectableToRCollectable HeartAndCassette = [RHeart, RCassette]
+collectableToRCollectable Berry = [RBerry]
+collectableToRCollectable Bino = [RBino]
+collectableToRCollectable Key = [RKey]
+collectableToRCollectable TheoCutscene = [RTheoCutscene]
+collectableToRCollectable WingedBerry = [RWinged]
+collectableToRCollectable SeededBerry = [RSeeded]
+collectableToRCollectable OneUp = [R1up]
+collectableToRCollectable Gem = [RGem]
+collectableToRCollectable AllCollectables = error "AllCollectables is not a valid RCollectable"
+collectableToRCollectable WingedGolden = error "WingedGolden is not a valid RCollectable"
+
+miscTaskToRCollectable :: MiscCountTask -> RCollectable
+miscTaskToRCollectable JumpOnSnowballs = RSnowballBops
+miscTaskToRCollectable StunOshiro = ROshiroStuns
+miscTaskToRCollectable StunSeeker = RSeekerStuns
+miscTaskToRCollectable KillSeeker = RSeekerKills
+
+chapterTypeToRCollectable :: ChapterType -> [RCollectable]
+chapterTypeToRCollectable ASide = [RASide]
+chapterTypeToRCollectable BSide = [RBSide]
+chapterTypeToRCollectable AAndBSide = [RASide, RBSide]
+
+data RCollectable = RTheoCutscene | RBerry | R1up | RHeart | RBlueHeart | RASide | RBSide 
+                  | RBino | RSeeded | RWinged | RCassette | RKey | RSeekerStuns | ROshiroStuns
+                  | RSnowballBops | RSeekerKills | RGem
+  deriving (Eq, Show)
+
+data Requirement = RCollectableCount Int RCollectable 
+                 | RCollectablesInChapter Bool Int Int RCollectable
+                 | RCollectableCountInChapters Int Int RCollectable
+                 | RCollectableCountInChapterType Bool Int RCollectable
+                 | RPico8Berries Int
+                 | RAllFlags
+                 | RReachRockBottom
+  deriving (Eq, Show)

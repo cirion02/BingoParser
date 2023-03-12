@@ -39,12 +39,12 @@ executable BingoParser-exe
   other-modules:
       BingoData
       BingoModel
+      FixedObjectiveRouter
       Helper
       Lexer
       Parser
       Route
       RouteCorrector
-      Router
       Paths_BingoParser
   hs-source-dirs:
       app
