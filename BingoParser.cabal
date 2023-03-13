@@ -40,9 +40,12 @@ executable BingoParser-exe
       BingoData
       BingoModel
       FixedObjectiveRouter
+      GetRouteValues
       Helper
       Lexer
       Parser
+      Requirement
+      RequirementCorrector
       Route
       RouteCorrector
       Paths_BingoParser

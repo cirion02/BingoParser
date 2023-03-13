@@ -5,7 +5,7 @@ import BingoData
 
 -- This does not fix routes that use multiple assist skips
 correctImpossibleRoute :: Route -> Route
-correctImpossibleRoute = correctCheckpointWithoutPrevious . correctBsideWithoutCassette . correctCoreCompleteWithoutHeart . correctSummitBlueWithoutGems . correctPicoWithoutMess
+correctImpossibleRoute = correctCheckpointWithoutPrevious . correctBsideWithoutCassette . correctCoreCompleteWithoutHeart . correctCoreHeartWithoutComplete . correctSummitBlueWithoutGems . correctPicoWithoutMess
 
 
 correctPicoWithoutMess :: Route -> Route
@@ -26,6 +26,10 @@ correctCoreCompleteWithoutHeart :: Route -> Route
 correctCoreCompleteWithoutHeart r | (\(Checkpoint _ c _ _ _ _ _) -> c) $ getCheckpoint True 8 4 r = routeCheckpointSet True 8 4 (setHeart True) r
                                   | otherwise = r
 
+correctCoreHeartWithoutComplete :: Route -> Route
+correctCoreHeartWithoutComplete r | (\(Checkpoint _ _ _ _ h _ _) -> h) $ getCheckpoint True 8 4 r = routeCheckpointSet True 8 4 (setComplete True) r
+                                  | otherwise = r
+
 correctBsideWithoutCassette :: Route -> Route
 correctBsideWithoutCassette r = foldr correctBsideWithoutCassette' r [1..7]
 
@@ -40,7 +44,7 @@ correctCheckpointWithoutPrevious' :: Bool -> Int -> Route -> Route
 correctCheckpointWithoutPrevious' side chapterNum r = correctCheckpointWithoutPrevious'' side (getCheckpointCount side chapterNum r) chapterNum r
 
 correctCheckpointWithoutPrevious'' :: Bool -> Int -> Int -> Route -> Route
-correctCheckpointWithoutPrevious'' side 0 chapterNum r = r
+correctCheckpointWithoutPrevious'' _ 0 _ r = r
 correctCheckpointWithoutPrevious'' side cpNum chapterNum r | checkpointIsEmpty $ getCheckpoint side chapterNum cpNum r = correctCheckpointWithoutPrevious'' side (cpNum - 1) chapterNum r
                                                            | otherwise = correctCheckpointWithoutPrevious''' side chapterNum (cpNum - 1) r
 

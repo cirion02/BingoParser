@@ -1,4 +1,4 @@
-module Route (blueHeartCount, showRouteBreakdown, 
+module Route (showRouteBreakdown, 
 routeCheckpointSet, routeCheckpointSetMultiple, 
 routeAllCheckpointsSet, routeAllCheckpointsSetMultiple,
 setCassette, setComplete, setHeart, addBerries, addBinos, addTasks,
@@ -6,7 +6,9 @@ setAllBerriesInChapter, setAllBinosInChapter, addAllBerriesInCheckpoint, addAllB
 addPicoBerries, setPicoComplete, setPicoOrb, setPicoSite, setBirdsNest,
 getCheckpoint, getChapter,
 checkpointIsEmpty, chapterIsEmpty, getCheckpointCount,
-emptyRoute, Route (..), OtherLocations (..), Epilogue (..), Pico (..), Chapter (..), Checkpoint (..)) where
+emptyRoute, Route (..), OtherLocations (..), Epilogue (..), Pico (..), Chapter (..), Checkpoint (..),
+RouteAlgebra, routeFold, ignore, ignore2, boolToInt
+) where
 
 import Helper
 import BingoData
@@ -37,7 +39,7 @@ type ReachSite = Bool
 type BirdsNest = Bool
 
 data Pico = Pico Complete ReachOrb ReachSite Berries
-data Epilogue = Epilogue BirdsNest 
+data Epilogue = Epilogue BirdsNest
 
 data OtherLocations = OtherLocations Pico Epilogue
 
@@ -67,8 +69,8 @@ type RouteAlgebra route asides bsides chap check name time ber bino cas hea com 
   nest -> loc
   )
 
-fold :: RouteAlgebra route asides bsides chap check name time ber bino cas hea com tasks orb site nest loc locs res -> Route -> res
-fold (resF, routeF, asideF, bsideF, olocF, chapF, checkF, nameF, timeF, berF, casF, heaF, comF, binoF, tasksF, orbF, siteF, nestF, picoF, epilF) = fres
+routeFold :: RouteAlgebra route asides bsides chap check name time ber bino cas hea com tasks orb site nest loc locs res -> Route -> res
+routeFold (resF, routeF, asideF, bsideF, olocF, chapF, checkF, nameF, timeF, berF, casF, heaF, comF, binoF, tasksF, orbF, siteF, nestF, picoF, epilF) = fres
   where
     fres (Route a b (OtherLocations p e) t) = resF $ routeF (asideF $ map fchap a) (bsideF $ map fchap b) (olocF (fpico p) (fepil e)) (timeF t)
 
@@ -89,35 +91,9 @@ boolToInt :: Bool -> Int
 boolToInt True  = 1
 boolToInt False = 0
 
-blueHeartCount :: Route -> Int
-blueHeartCount = fold alg
-  where
-    alg :: RouteAlgebra Int Int () Int Int () () () () () Int () () () () () () () Int
-    alg = (
-        id, 
-        \x _ _ _ -> x, 
-        sum, 
-        ignore,
-        ignore2,
-        \_ xs -> sum xs,
-        \_ _ _ _ x _ _ -> x,
-        ignore, 
-        ignore, 
-        ignore, 
-        ignore,
-        boolToInt,
-        ignore,
-        ignore,
-        ignore,
-        ignore,
-        ignore,
-        ignore,
-        \_ _ _ _ -> (),
-        ignore
-      )
 
 showRouteBreakdown :: Route -> String
-showRouteBreakdown = fold alg
+showRouteBreakdown = routeFold alg
   where
     alg :: RouteAlgebra String String String String String String String [String] [String] Bool Bool Bool [String] Bool Bool Bool String String String
     alg = (
